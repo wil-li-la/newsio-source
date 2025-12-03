@@ -66,49 +66,92 @@ Every item (regardless of type) has these fields:
 
 **Endpoint:** `/item/{id}.json`
 
-**Example:**
+**Example (Python):**
 ```python
-response = requests.get('https://hacker-news.firebaseio.com/v0/item/8863.json')
-item = response.json()
+import urllib.request, json
+
+# Fetch a story
+story_url = 'https://hacker-news.firebaseio.com/v0/item/8863.json'
+with urllib.request.urlopen(story_url) as response:
+    story = json.loads(response.read())
+
+# Access story fields
+print(story['title'])        # "My YC app: Dropbox - Throw away your USB drive"
+print(story['score'])        # 111
+print(story['by'])           # "dhouston"
+print(story['descendants'])  # 71
+```
+
+**Example (TypeScript/Deno):**
+```typescript
+// Fetch a story
+const storyUrl = 'https://hacker-news.firebaseio.com/v0/item/8863.json';
+const response = await fetch(storyUrl);
+const story = await response.json();
+
+// Access story fields
+console.log(story.title);        // "My YC app: Dropbox - Throw away your USB drive"
+console.log(story.score);        // 111
+console.log(story.by);           // "dhouston"
+console.log(story.descendants);  // 71
 ```
 
 ---
 
-## Item Object Fields
+## Available Keys After Fetching a Story
 
-### Common Fields (All Items)
+When you fetch a story using `/item/{id}.json`, here are the keys you can access:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | number | The item's unique ID |
-| `deleted` | boolean | `true` if the item is deleted |
-| `type` | string | Item type: "story", "comment", "job", "poll", or "pollopt" |
-| `by` | string | Username of the item's author |
-| `time` | number | Creation time (Unix timestamp) |
-| `dead` | boolean | `true` if the item is dead |
+| Key | Type | Always Present? | Description |
+|-----|------|----------------|-------------|
+| `id` | number | ✅ Yes | Unique story ID |
+| `type` | string | ✅ Yes | Always "story" for stories |
+| `by` | string | ✅ Yes | Username of author |
+| `time` | number | ✅ Yes | Unix timestamp |
+| `title` | string | ✅ Yes | Story title |
+| `score` | number | ✅ Yes | Points (upvotes) |
+| `descendants` | number | ✅ Yes | Total comment count (all levels) |
+| `url` | string | ⚠️ Sometimes | External link (not present for Ask HN/text posts) |
+| `text` | string | ⚠️ Sometimes | Story text (only for Ask HN, Show HN text posts) |
+| `kids` | array | ⚠️ Sometimes | Array of top-level comment IDs (empty if no comments) |
+| `deleted` | boolean | ❌ Rare | Only present if story is deleted |
+| `dead` | boolean | ❌ Rare | Only present if story is dead/flagged |
 
----
+### Quick Reference
 
-### Story Fields
+**Python:**
+```python
+# Always available
+story['id']           # e.g., 8863
+story['type']         # "story"
+story['by']           # e.g., "dhouston"
+story['time']         # e.g., 1175714200
+story['title']        # e.g., "My YC app: Dropbox"
+story['score']        # e.g., 111
+story['descendants']  # e.g., 71
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `title` | string | The story's title |
-| `url` | string | The URL of the story (if external link) |
-| `text` | string | The story or poll text (HTML) - for Ask HN, etc. |
-| `score` | number | The story's score (points) |
-| `descendants` | number | Total number of comments |
-| `kids` | array | IDs of the item's comments, in ranked display order |
+# Use .get() for optional fields
+story.get('url', '')         # External URL or empty string
+story.get('text', '')        # Story text or empty string
+story.get('kids', [])        # Comment IDs or empty list
+```
 
----
+**TypeScript:**
+```typescript
+// Always available
+story.id           // e.g., 8863
+story.type         // "story"
+story.by           // e.g., "dhouston"
+story.time         // e.g., 1175714200
+story.title        // e.g., "My YC app: Dropbox"
+story.score        // e.g., 111
+story.descendants  // e.g., 71
 
-### Comment Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `parent` | number | The comment's parent (story or comment ID) |
-| `text` | string | The comment text (HTML) |
-| `kids` | array | IDs of replies to this comment |
+// Optional fields (may be undefined)
+story.url || ''         // External URL or empty string
+story.text || ''        // Story text or empty string
+story.kids || []        // Comment IDs or empty array
+```
 
 
 
